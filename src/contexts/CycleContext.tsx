@@ -18,6 +18,8 @@ interface CycleContextInterface {
 	stopCycle(): void;
 	interruptCycle(): void;
 	createNewCycle(data: NewCycleFormData): void;
+	minutes: string;
+	seconds: string;
 }
 
 export const CycleContext = createContext<CycleContextInterface>({
@@ -26,6 +28,8 @@ export const CycleContext = createContext<CycleContextInterface>({
 	interruptCycle() {},
 	createNewCycle() {},
 	activeCycle: undefined,
+	minutes: "00",
+	seconds: "00",
 });
 
 export function useCycleContext() {
