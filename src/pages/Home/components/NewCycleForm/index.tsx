@@ -1,12 +1,8 @@
-import { UseFormRegister } from "react-hook-form";
+import { useFormContext } from "react-hook-form";
 import { FormContainer, TaskInput, MinutesAmountInput } from "../../styles";
-import { NewCycleFormData } from "../../types";
 
-interface NewCycleFormProps {
-	register: UseFormRegister<NewCycleFormData>;
-}
-
-export const NewCycleForm = ({ register }: NewCycleFormProps) => {
+export const NewCycleForm = () => {
+	const { register } = useFormContext();
 	return (
 		<FormContainer>
 			<label htmlFor="task">Vou trabalhar em</label>

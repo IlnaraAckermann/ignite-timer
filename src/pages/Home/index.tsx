@@ -5,7 +5,7 @@ import {
 	StartCountdownButton,
 	StopCountdownButton,
 } from "./styles";
-import { useForm } from "react-hook-form";
+import { FormProvider, useForm } from "react-hook-form";
 import { useCallback, useState } from "react";
 import { NewCycleForm } from "./components/NewCycleForm";
 import { Cycle, NewCycleFormData } from "./types";
@@ -15,18 +15,18 @@ export function Home() {
 	const [cycles, setCycles] = useState<Cycle[]>([]);
 	const [activeCycleId, setActiveCycleId] = useState<string | null>(null);
 
-	const {
-		register,
-		handleSubmit,
-		reset,
-		formState: { isValid },
-	} = useForm<NewCycleFormData>({
+	const CycleForm = useForm<NewCycleFormData>({
 		mode: "onSubmit",
 		defaultValues: {
 			task: "",
 			minutesAmount: 0,
 		},
 	});
+	const {
+		handleSubmit,
+		reset,
+		formState: { isValid },
+	} = CycleForm;
 
 	const activeCycle = cycles.find((cycle) => cycle.id === activeCycleId);
 
@@ -74,7 +74,9 @@ export function Home() {
 	return (
 		<HomeContainer>
 			<form onSubmit={handleSubmit(onSubmit)}>
-				<NewCycleForm register={register} />
+				<FormProvider {...CycleForm}>
+					<NewCycleForm />
+				</FormProvider>
 				<Countdown
 					activeCycle={activeCycle}
 					stopCycle={stopCycle}
