@@ -6,14 +6,12 @@ import {
 	StopCountdownButton,
 } from "./styles";
 import { FormProvider, useForm } from "react-hook-form";
-import { useCallback, useState } from "react";
 import { NewCycleForm } from "./components/NewCycleForm";
-import { Cycle, NewCycleFormData } from "./types";
 import { Countdown } from "./components/Countdown";
+import { NewCycleFormData, useCycleContext } from "../../contexts/CycleContext";
 
 export function Home() {
-	const [cycles, setCycles] = useState<Cycle[]>([]);
-	const [activeCycleId, setActiveCycleId] = useState<string | null>(null);
+	const { createNewCycle, activeCycle, interruptCycle } = useCycleContext();
 
 	const CycleForm = useForm<NewCycleFormData>({
 		mode: "onSubmit",
@@ -22,53 +20,16 @@ export function Home() {
 			minutesAmount: 0,
 		},
 	});
+
 	const {
 		handleSubmit,
 		reset,
 		formState: { isValid },
 	} = CycleForm;
 
-	const activeCycle = cycles.find((cycle) => cycle.id === activeCycleId);
-
-	const stopCycle = useCallback(() => {
-		setCycles((prev) =>
-			prev.map((cycle) => {
-				if (cycle.id === activeCycleId) {
-					return { ...cycle, finishDate: new Date() };
-				}
-				return cycle;
-			})
-		);
-		setActiveCycleId(null);
-	}, [activeCycleId]);
-
-	const createNewCycle = (data: NewCycleFormData) => {
-		const id = String(new Date().getTime());
-		const newCycle: Cycle = {
-			id,
-			task: data.task,
-			minutesAmount: data.minutesAmount,
-			startDate: new Date(),
-		};
-		setCycles((prev) => [...prev, newCycle]);
-		setActiveCycleId(id);
-		reset();
-	};
-
 	const onSubmit = (data: NewCycleFormData) => {
 		createNewCycle(data);
-	};
-
-	const interruptCycle = () => {
-		setCycles((prev) =>
-			prev.map((cycle) => {
-				if (cycle.id === activeCycleId) {
-					return { ...cycle, interruptedDate: new Date() };
-				}
-				return cycle;
-			})
-		);
-		setActiveCycleId(null);
+		reset();
 	};
 
 	return (
@@ -77,10 +38,7 @@ export function Home() {
 				<FormProvider {...CycleForm}>
 					<NewCycleForm />
 				</FormProvider>
-				<Countdown
-					activeCycle={activeCycle}
-					stopCycle={stopCycle}
-				/>
+				<Countdown />
 				{activeCycle ? (
 					<StopCountdownButton
 						type="button"

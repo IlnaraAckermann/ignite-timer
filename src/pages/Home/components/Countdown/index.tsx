@@ -1,14 +1,14 @@
 import { useEffect, useState } from "react";
 import { CountdownContainer, Separator } from "../../styles";
-import { Cycle } from "../../types";
-import { differenceInSeconds } from "date-fns";
 
-export type CountdownProps = {
-	activeCycle?: Cycle;
-	stopCycle: () => void;
-};
-export const Countdown = ({ activeCycle, stopCycle }: CountdownProps) => {
+import { differenceInSeconds } from "date-fns";
+import { useCycleContext } from "../../../../contexts/CycleContext";
+
+export const Countdown = () => {
+	const { activeCycle, stopCycle } = useCycleContext();
 	const [amountSecondsPassed, setAmountSecondsPassed] = useState(0);
+
+
 
 	useEffect(() => {
 		let interval: number;
