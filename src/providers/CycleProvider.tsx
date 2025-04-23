@@ -1,49 +1,64 @@
-import { ReactNode, useCallback, useEffect, useMemo, useState } from "react";
+import { ReactNode, useCallback, useMemo, useReducer, useState } from "react";
 import {
 	Cycle,
 	CycleContext,
 	NewCycleFormData,
 } from "../contexts/CycleContext";
-import { differenceInSeconds } from "date-fns";
 
 interface CycleProviderProps {
 	children: ReactNode;
 }
+
+type ReducerAction = {
+	type: "ADD_CYCLE" | "STOP_CYCLE" | "INTERUPT_CYCLE";
+	payload?: Cycle;
+};
+
+const reducer = (cycles: Cycle[], action: { type: string; payload: Cycle }) => {
+	switch (action.type) {
+		case "ADD_CYCLE":
+			return [...cycles, action.payload];
+		case "STOP_CYCLE":
+			return cycles.map((cycle) =>
+				cycle.id === action.payload?.id
+					? { ...cycle, finishDate: new Date() }
+					: cycle
+			);
+		case "INTERUPT_CYCLE":
+			return cycles.map((cycle) =>
+				cycle.id === action.payload?.id
+					? { ...cycle, interruptedDate: new Date() }
+					: cycle
+			);
+		default:
+			return cycles;
+	}
+};
 export const CycleProvider = ({ children }: CycleProviderProps) => {
-	const [cycles, setCycles] = useState<Cycle[]>([]);
+	const [cycles, dispatch] = useReducer(
+		(state: Cycle[], action: ReducerAction) => reducer(state, action),
+		[]
+	);
+
 	const [activeCycleId, setActiveCycleId] = useState<string | null>(null);
 
 	const activeCycle = cycles.find((cycle) => cycle.id === activeCycleId);
 
-	const [amountSecondsPassed, setAmountSecondsPassed] = useState(
-		activeCycle
-			? differenceInSeconds(new Date(), new Date(activeCycle.startDate))
-			: 0
-	);
-
 	const stopCycle = useCallback(() => {
-		setCycles((prev) =>
-			prev.map((cycle) => {
-				if (cycle.id === activeCycleId) {
-					return { ...cycle, finishDate: new Date() };
-				}
-				return cycle;
-			})
-		);
+		dispatch({
+			type: "STOP_CYCLE",
+			payload: activeCycle!,
+		});
 		setActiveCycleId(null);
-	}, [activeCycleId]);
+	}, [activeCycle]);
 
 	const interruptCycle = useCallback(() => {
-		setCycles((prev) =>
-			prev.map((cycle) => {
-				if (cycle.id === activeCycleId) {
-					return { ...cycle, interruptedDate: new Date() };
-				}
-				return cycle;
-			})
-		);
+		dispatch({
+			type: "INTERUPT_CYCLE",
+			payload: activeCycle!,
+		});
 		setActiveCycleId(null);
-	}, [activeCycleId]);
+	}, [activeCycle]);
 
 	const createNewCycle = useCallback((data: NewCycleFormData) => {
 		const id = String(new Date().getTime());
@@ -53,48 +68,12 @@ export const CycleProvider = ({ children }: CycleProviderProps) => {
 			minutesAmount: data.minutesAmount,
 			startDate: new Date(),
 		};
-		setCycles((prev) => [...prev, newCycle]);
+		dispatch({
+			type: "ADD_CYCLE",
+			payload: newCycle,
+		});
 		setActiveCycleId(id);
 	}, []);
-
-	useEffect(() => {
-		let interval: number;
-
-		if (activeCycle) {
-			interval = setInterval(() => {
-				const secondsDifference = differenceInSeconds(
-					new Date(),
-					new Date(activeCycle.startDate)
-				);
-
-				if (secondsDifference >= activeCycle.minutesAmount * 60) {
-					stopCycle();
-					setAmountSecondsPassed(0);
-					clearInterval(interval);
-					document.title = "Ignite Timer";
-				} else {
-					setAmountSecondsPassed(secondsDifference);
-				}
-			}, 1000);
-		} else {
-			setAmountSecondsPassed(0);
-		}
-
-		return () => {
-			clearInterval(interval);
-		};
-	}, [activeCycle, stopCycle]);
-
-	const totalSeconds = activeCycle ? activeCycle.minutesAmount * 60 : 0;
-	const currentSeconds = activeCycle ? totalSeconds - amountSecondsPassed : 0;
-	const minutes = String(Math.floor(currentSeconds / 60)).padStart(2, "0");
-	const seconds = String(currentSeconds % 60).padStart(2, "0");
-
-	useEffect(() => {
-		if (activeCycle) {
-			document.title = `${minutes}:${seconds}`;
-		}
-	}, [minutes, seconds, activeCycle]);
 
 	const value = useMemo(
 		() => ({
@@ -103,18 +82,8 @@ export const CycleProvider = ({ children }: CycleProviderProps) => {
 			stopCycle,
 			interruptCycle,
 			createNewCycle,
-			minutes,
-			seconds,
 		}),
-		[
-			cycles,
-			activeCycle,
-			stopCycle,
-			interruptCycle,
-			createNewCycle,
-			minutes,
-			seconds,
-		]
+		[cycles, activeCycle, stopCycle, interruptCycle, createNewCycle]
 	);
 	return (
 		<CycleContext.Provider value={value}>{children}</CycleContext.Provider>
