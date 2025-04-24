@@ -1,4 +1,4 @@
-import { ReactNode, useCallback, useMemo, useReducer } from "react";
+import { ReactNode, useCallback, useEffect, useMemo, useReducer } from "react";
 import { CycleContext } from "../contexts/CycleContext";
 import {
 	Cycle,
@@ -20,12 +20,25 @@ interface CycleProviderProps {
 export const CycleProvider = ({ children }: CycleProviderProps) => {
 	const [cycleState, dispatch] = useReducer(
 		(state: CycleState, action: ReducerAction) => cycleReducer(state, action),
-		{ cycles: [], activeCycleId: null }
+		{ cycles: [], activeCycleId: null },
+		() => {
+			const storedStateAsJSON = localStorage.getItem(
+				"@ignite-timer:cycle-state-1.0.0"
+			);
+			if (storedStateAsJSON) {
+				return JSON.parse(storedStateAsJSON);
+			}
+			return { cycles: [], activeCycleId: null };
+		}
 	);
 
-	const activeCycle = cycleState.cycles.find(
-		(cycle) => cycle.id === cycleState.activeCycleId
-	);
+	useEffect(() => {
+		const stateJson = JSON.stringify(cycleState);
+		localStorage.setItem("@ignite-timer:cycle-state-1.0.0", stateJson);
+	}, [cycleState]);
+
+	const { activeCycleId, cycles } = cycleState;
+	const activeCycle = cycles.find((cycle) => cycle.id === activeCycleId);
 
 	const markCurrentCycleAsFinish = useCallback(() => {
 		dispatch(markCurrentCycleAsFinishAction());
@@ -48,14 +61,14 @@ export const CycleProvider = ({ children }: CycleProviderProps) => {
 
 	const value = useMemo(
 		() => ({
-			cycles: cycleState.cycles,
+			cycles,
 			activeCycle,
 			markCurrentCycleAsFinish,
 			interruptCurrentCycle,
 			addNewCycle,
 		}),
 		[
-			cycleState.cycles,
+			cycles,
 			activeCycle,
 			markCurrentCycleAsFinish,
 			interruptCurrentCycle,
