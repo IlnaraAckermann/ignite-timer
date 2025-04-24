@@ -6,7 +6,11 @@ import { useEffect, useState } from "react";
 
 export const Countdown = () => {
 	const { activeCycle, markCurrentCycleAsFinish } = useCycleContext();
-	const [amountSecondsPassed, setAmountSecondsPassed] = useState(0);
+	const [amountSecondsPassed, setAmountSecondsPassed] = useState(
+		activeCycle
+			? differenceInSeconds(new Date(), new Date(activeCycle.startDate))
+			: 0
+	);
 
 	useEffect(() => {
 		let interval: number;
