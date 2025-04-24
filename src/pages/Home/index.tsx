@@ -8,7 +8,8 @@ import {
 import { FormProvider, useForm } from "react-hook-form";
 import { NewCycleForm } from "./components/NewCycleForm";
 import { Countdown } from "./components/Countdown";
-import { NewCycleFormData, useCycleContext } from "../../contexts/CycleContext";
+import { useCycleContext } from "../../contexts/CycleContext";
+import { NewCycleFormData } from "../../reducers/cycles";
 
 export function Home() {
 	const { createNewCycle, activeCycle, interruptCycle } = useCycleContext();

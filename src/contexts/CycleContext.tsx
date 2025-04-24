@@ -1,16 +1,5 @@
 import { createContext, useContext } from "react";
-
-export type NewCycleFormData = {
-	task: string;
-	minutesAmount: number;
-};
-
-export type Cycle = NewCycleFormData & {
-	id: string;
-	startDate: Date;
-	finishDate?: Date;
-	interruptedDate?: Date;
-};
+import { Cycle, NewCycleFormData } from "../reducers/cycles";
 
 interface CycleContextInterface {
 	cycles: Cycle[];

@@ -1,64 +1,39 @@
-import { ReactNode, useCallback, useMemo, useReducer, useState } from "react";
+import { ReactNode, useCallback, useMemo, useReducer } from "react";
+import { CycleContext } from "../contexts/CycleContext";
 import {
 	Cycle,
-	CycleContext,
+	CycleActionTypes,
+	cycleReducer,
+	CycleState,
 	NewCycleFormData,
-} from "../contexts/CycleContext";
+	ReducerAction,
+} from "../reducers/cycles";
 
 interface CycleProviderProps {
 	children: ReactNode;
 }
 
-type ReducerAction = {
-	type: "ADD_CYCLE" | "STOP_CYCLE" | "INTERUPT_CYCLE";
-	payload?: Cycle;
-};
-
-const reducer = (cycles: Cycle[], action: { type: string; payload: Cycle }) => {
-	switch (action.type) {
-		case "ADD_CYCLE":
-			return [...cycles, action.payload];
-		case "STOP_CYCLE":
-			return cycles.map((cycle) =>
-				cycle.id === action.payload?.id
-					? { ...cycle, finishDate: new Date() }
-					: cycle
-			);
-		case "INTERUPT_CYCLE":
-			return cycles.map((cycle) =>
-				cycle.id === action.payload?.id
-					? { ...cycle, interruptedDate: new Date() }
-					: cycle
-			);
-		default:
-			return cycles;
-	}
-};
 export const CycleProvider = ({ children }: CycleProviderProps) => {
-	const [cycles, dispatch] = useReducer(
-		(state: Cycle[], action: ReducerAction) => reducer(state, action),
-		[]
+	const [cycleState, dispatch] = useReducer(
+		(state: CycleState, action: ReducerAction) => cycleReducer(state, action),
+		{ cycles: [], activeCycleId: null }
 	);
 
-	const [activeCycleId, setActiveCycleId] = useState<string | null>(null);
-
-	const activeCycle = cycles.find((cycle) => cycle.id === activeCycleId);
+	const activeCycle = cycleState.cycles.find(
+		(cycle) => cycle.id === cycleState.activeCycleId
+	);
 
 	const stopCycle = useCallback(() => {
 		dispatch({
-			type: "STOP_CYCLE",
-			payload: activeCycle!,
+			type: CycleActionTypes.MARK_CURRENT_CYCLE_AS_FINISH,
 		});
-		setActiveCycleId(null);
-	}, [activeCycle]);
+	}, []);
 
 	const interruptCycle = useCallback(() => {
 		dispatch({
-			type: "INTERUPT_CYCLE",
-			payload: activeCycle!,
+			type: CycleActionTypes.INTERUPT_CURRENT_CYCLE,
 		});
-		setActiveCycleId(null);
-	}, [activeCycle]);
+	}, []);
 
 	const createNewCycle = useCallback((data: NewCycleFormData) => {
 		const id = String(new Date().getTime());
@@ -69,21 +44,20 @@ export const CycleProvider = ({ children }: CycleProviderProps) => {
 			startDate: new Date(),
 		};
 		dispatch({
-			type: "ADD_CYCLE",
+			type: CycleActionTypes.ADD_NEW_CYCLE,
 			payload: newCycle,
 		});
-		setActiveCycleId(id);
 	}, []);
 
 	const value = useMemo(
 		() => ({
-			cycles,
+			cycles: cycleState.cycles,
 			activeCycle,
 			stopCycle,
 			interruptCycle,
 			createNewCycle,
 		}),
-		[cycles, activeCycle, stopCycle, interruptCycle, createNewCycle]
+		[cycleState.cycles, activeCycle, stopCycle, interruptCycle, createNewCycle]
 	);
 	return (
 		<CycleContext.Provider value={value}>{children}</CycleContext.Provider>
