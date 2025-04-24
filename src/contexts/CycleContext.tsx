@@ -1,19 +1,19 @@
 import { createContext, useContext } from "react";
-import { Cycle, NewCycleFormData } from "../reducers/cycles";
+import { Cycle, NewCycleFormData } from "../reducers/cycles/cycles";
 
 interface CycleContextInterface {
 	cycles: Cycle[];
 	activeCycle: Cycle | undefined;
-	stopCycle(): void;
-	interruptCycle(): void;
-	createNewCycle(data: NewCycleFormData): void;
+	markCurrentCycleAsFinish(): void;
+	interruptCurrentCycle(): void;
+	addNewCycle(data: NewCycleFormData): void;
 }
 
 export const CycleContext = createContext<CycleContextInterface>({
 	cycles: [],
-	stopCycle() {},
-	interruptCycle() {},
-	createNewCycle() {},
+	markCurrentCycleAsFinish() {},
+	interruptCurrentCycle() {},
+	addNewCycle() {},
 	activeCycle: undefined,
 });
 

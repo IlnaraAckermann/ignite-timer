@@ -5,7 +5,7 @@ import { differenceInSeconds } from "date-fns";
 import { useEffect, useState } from "react";
 
 export const Countdown = () => {
-	const { activeCycle, stopCycle } = useCycleContext();
+	const { activeCycle, markCurrentCycleAsFinish } = useCycleContext();
 	const [amountSecondsPassed, setAmountSecondsPassed] = useState(
 		activeCycle
 			? differenceInSeconds(new Date(), new Date(activeCycle.startDate))
@@ -23,7 +23,7 @@ export const Countdown = () => {
 				);
 
 				if (secondsDifference >= activeCycle.minutesAmount * 60) {
-					stopCycle();
+					markCurrentCycleAsFinish();
 					setAmountSecondsPassed(0);
 					clearInterval(interval);
 					document.title = "Ignite Timer";
@@ -38,7 +38,7 @@ export const Countdown = () => {
 		return () => {
 			clearInterval(interval);
 		};
-	}, [activeCycle, setAmountSecondsPassed, stopCycle]);
+	}, [activeCycle, setAmountSecondsPassed, markCurrentCycleAsFinish]);
 
 	const totalSeconds = activeCycle ? activeCycle.minutesAmount * 60 : 0;
 	const currentSeconds = activeCycle ? totalSeconds - amountSecondsPassed : 0;

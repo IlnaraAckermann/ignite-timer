@@ -9,10 +9,10 @@ import { FormProvider, useForm } from "react-hook-form";
 import { NewCycleForm } from "./components/NewCycleForm";
 import { Countdown } from "./components/Countdown";
 import { useCycleContext } from "../../contexts/CycleContext";
-import { NewCycleFormData } from "../../reducers/cycles";
+import { NewCycleFormData } from "../../reducers/cycles/cycles";
 
 export function Home() {
-	const { createNewCycle, activeCycle, interruptCycle } = useCycleContext();
+	const { addNewCycle, activeCycle, interruptCurrentCycle } = useCycleContext();
 
 	const CycleForm = useForm<NewCycleFormData>({
 		mode: "onSubmit",
@@ -29,7 +29,7 @@ export function Home() {
 	} = CycleForm;
 
 	const onSubmit = (data: NewCycleFormData) => {
-		createNewCycle(data);
+		addNewCycle(data);
 		reset();
 	};
 
@@ -43,7 +43,7 @@ export function Home() {
 				{activeCycle ? (
 					<StopCountdownButton
 						type="button"
-						onClick={interruptCycle}
+						onClick={interruptCurrentCycle}
 					>
 						<HandPalm size={24} />
 						Interromper
