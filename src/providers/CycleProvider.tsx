@@ -21,14 +21,14 @@ export const CycleProvider = ({ children }: CycleProviderProps) => {
 	const [cycleState, dispatch] = useReducer(
 		(state: CycleState, action: ReducerAction) => cycleReducer(state, action),
 		{ cycles: [], activeCycleId: null },
-		() => {
+		(initialState) => {
 			const storedStateAsJSON = localStorage.getItem(
 				"@ignite-timer:cycle-state-1.0.0"
 			);
 			if (storedStateAsJSON) {
 				return JSON.parse(storedStateAsJSON);
 			}
-			return { cycles: [], activeCycleId: null };
+			return initialState;
 		}
 	);
 
